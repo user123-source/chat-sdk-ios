@@ -96,10 +96,10 @@
 "bChooseExistingPhoto" = "Choose existing photo";
 "bChooseExistingVideo" = "Choose existing video";
 "bCurrentLocation" = "Current location";
-"bSend" = "Send";
+"bSend" = "SEND";
 "bReply" = "Reply";
 "bRec" = "Record";
-"bWriteSomething" = "Write something...";
+"bWriteSomething" = "Your message...";
 "bSlideToCancel" = "Slide to cancel...";
 "bName" = "Name";
 "bTapHereForContactInfo" = "tap here for contact info";

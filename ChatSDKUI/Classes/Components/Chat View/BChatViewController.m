@@ -46,6 +46,9 @@
     
     [super setAudioEnabled: BChatSDK.audioMessage != Nil];
     
+    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+    self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:248.0/255.0 green:181.0/255.0 blue:25.0/255.0 alpha:1];
+    
     
 }
 
