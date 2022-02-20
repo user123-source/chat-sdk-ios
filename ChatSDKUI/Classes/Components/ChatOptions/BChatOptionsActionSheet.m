@@ -58,6 +58,11 @@
     return NO;
 }
 
+- (void)willPresentActionSheet:(UIActionSheet *)actionSheet{
+    [[UIView appearanceWhenContainedIn:[UIAlertController class], nil] setTintColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1]];
+
+}
+
 -(UIView *) keyboardView {
     return Nil;
 }
