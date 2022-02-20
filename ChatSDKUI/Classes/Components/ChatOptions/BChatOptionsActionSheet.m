@@ -36,6 +36,8 @@
 //    view.popoverPresentationController.permittedArrowDirections = @[];
     view.popoverPresentationController.sourceView = _delegate.currentViewController.view;
     
+    view.view.tintColor = [UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1];
+    
     if (_options.count) {
         for (BChatOption * option in _options) {
             UIAlertAction * action = [UIAlertAction actionWithTitle:option.title
@@ -50,28 +52,14 @@
                                                             handler:^(UIAlertAction * action) {
             [self dismissView];
         }];
+        
+        [action setValue: [UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forKey:@"titleTextColor"];
         [view addAction:action];
 
         [_delegate.currentViewController presentViewController:view animated:YES completion:nil];
     }
 
     return NO;
-}
-
-- (void)willPresentActionSheet:(UIActionSheet *)actionSheet{
-    
-    alertController.view.tintColor = [UIColor redColor];
-    [[UIView appearanceWhenContainedIn:[UIAlertController class], nil] setTintColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1]];
-
-    for (UIView *subview in actionSheet.subviews) {
-            if ([subview isKindOfClass:[UIButton class]]) {
-                UIButton *button = (UIButton *)subview;
-                
-                [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateHighlighted];
-                [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateNormal];
-                [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateSelected];
-            }
-        }
 }
 
 -(UIView *) keyboardView {
