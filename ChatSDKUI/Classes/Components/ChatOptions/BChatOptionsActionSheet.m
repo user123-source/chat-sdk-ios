@@ -66,7 +66,10 @@
     for (UIView *subview in actionSheet.subviews) {
             if ([subview isKindOfClass:[UIButton class]]) {
                 UIButton *button = (UIButton *)subview;
+                
+                [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateHighlighted];
                 [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateNormal];
+                [button setTitleColor:[UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1] forState:UIControlStateSelected];
             }
         }
 }
