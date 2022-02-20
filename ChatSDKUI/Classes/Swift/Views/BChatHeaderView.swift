@@ -33,7 +33,7 @@ import KeepLayout
         titleLabel?.text = Bundle.t(bThread)
         titleLabel?.textAlignment = .center
         titleLabel?.font = UIFont.boldSystemFont(ofSize: titleLabel!.font.pointSize)
-        
+        titleLabel?.textColor = UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1)
         addSubview(titleLabel!)
         
         titleLabel?.keepInsets.equal = 0
@@ -43,7 +43,7 @@ import KeepLayout
         
         subtitleLabel?.textAlignment = .center
         subtitleLabel?.font = UIFont.italicSystemFont(ofSize: 12.0)
-        subtitleLabel?.textColor = .lightGray
+        subtitleLabel?.textColor = UIColor(red: 170/255, green: 170/255, blue: 170/255, alpha: 1)
         
         addSubview(subtitleLabel!)
         
