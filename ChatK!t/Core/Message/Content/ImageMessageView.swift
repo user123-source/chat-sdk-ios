@@ -11,56 +11,78 @@ import FLAnimatedImage
 
 open class ImageMessageView: UIView, DownloadableContent, UploadableContent {
     
-    @IBOutlet public weak var imageView: FLAnimatedImageView!
-    @IBOutlet public weak var checkImageView: UIImageView!
-    @IBOutlet public weak var videoImageView: UIImageView!
-    @IBOutlet public weak var progressView: FFCircularProgressView!
-    @IBOutlet public weak var detailLabel: UILabel!
+    @IBOutlet public weak var ibImageView: FLAnimatedImageView!
+    @IBOutlet public weak var ibCheckImageView: UIImageView!
+    @IBOutlet public weak var ibVideoImageView: UIImageView!
+    @IBOutlet public weak var ibProgressView: FFCircularProgressView!
+    @IBOutlet public weak var ibDetailLabel: UILabel!
     
     open var blurView: UIView?
     open var message: Message?
     open var videoIconVisible = false
 
+    open var imageView: FLAnimatedImageView? { ibImageView }
+    open var checkView: UIView? { ibCheckImageView }
+    open var videoView: UIView? { ibVideoImageView }
+    open var progressView: FFCircularProgressView? { ibProgressView }
+    open var detailLabel: UILabel? { ibDetailLabel }
+
     override open func awakeFromNib() {
         super.awakeFromNib()
         blurView = ChatKit.provider().makeBackground(blur: true, effect: UIBlurEffect(style: .systemUltraThinMaterial))
-        insertSubview(blurView!, belowSubview: progressView)
-        blurView?.keepInsets.equal = 0
-        blurView?.layer.cornerRadius = ChatKit.config().bubbleCornerRadius
-        blurView?.clipsToBounds = true
+        if let blurView = blurView, let progressView = progressView {
+            insertSubview(blurView, belowSubview: progressView)
+            blurView.keepInsets.equal = 0
+            blurView.layer.cornerRadius = ChatKit.config().bubbleCornerRadius
+            blurView.clipsToBounds = true
+        }
 
-        detailLabel.isHidden = true
+        detailLabel?.isHidden = true
+        detailLabel?.textColor = ChatKit.asset(color: "message_icon")
 
-        progressView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(startStopDownload)))
-        
-        bringSubviewToFront(checkImageView)
+        progressView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(startStopDownload)))
+
+        if let checkImageView = checkView {
+            bringSubviewToFront(checkImageView)
+        }
     }
 
     open func setDownloadProgress(_ progress: Float, total: Float) {
         showProgressView()
-        progressView.progress = CGFloat(progress)
-        updateTotal(total)
+        progressView?.progress = CGFloat(progress)
+        updateTotal(total, progress: progress)
     }
 
     open func setUploadProgress(_ progress: Float, total: Float) {
-        showProgressView()
-        progressView.progress = CGFloat(progress)
-        updateTotal(total)
+        if progress > 0 {
+            showProgressView()
+        }
+        if progress == 1 {
+            hideProgressView()
+        }
+        progressView?.progress = CGFloat(progress)
+        updateTotal(total, progress: progress)
     }
     
-    open func updateTotal(_ total: Float) {
+    open func updateTotal(_ total: Float, progress: Float) {
         if total > 0 {
-            detailLabel.isHidden = false
-
-            if total < 1000 {
-                detailLabel.text = String(format: "%.0fKB", total)
+            detailLabel?.isHidden = false
+            
+            var percentage = ""
+            if ChatKit.config().showFileTransferPercentage {
+                percentage = String(format: "%.0f%%, ", progress * 100)
+                if total < 1000 {
+                    detailLabel?.text = String(format: "%@%.0fKB", percentage, total)
+                } else {
+                    let total = total / 1000
+                    detailLabel?.text = String(format: "%@%.0fMB", percentage, total)
+                }
             } else {
-                let total = total / 1000
-                detailLabel.text = String(format: "%.0fMB", total)
+                detailLabel?.text = ""
             }
         } else {
-            detailLabel.text = ""
-            detailLabel.isHidden = true
+            detailLabel?.text = ""
+            detailLabel?.isHidden = true
         }
     }
 
@@ -68,8 +90,10 @@ open class ImageMessageView: UIView, DownloadableContent, UploadableContent {
         if let message = message as? DownloadableMessage {
             if !message.isDownloading {
                 message.startDownload()
+                progressView?.startSpinProgressBackgroundLayer()
             } else {
                 message.pauseDownload()
+//                progressView?.stopSpinProgressBackgroundLayer()
             }
         }
     }
@@ -85,16 +109,16 @@ open class ImageMessageView: UIView, DownloadableContent, UploadableContent {
     
     open func implDownloadFinished(_ url: URL?, error: Error?) {
         hideProgressView()
-        progressView.stopSpinProgressBackgroundLayer()
+        progressView?.stopSpinProgressBackgroundLayer()
     }
     
     open func downloadPaused() {
-        progressView.progress = 0
+        progressView?.progress = 0
     }
     
     open func downloadStarted() {
         showProgressView()
-        progressView.stopSpinProgressBackgroundLayer()
+        progressView?.stopSpinProgressBackgroundLayer()
     }
     
     open func uploadFinished(_ url: URL?, error: Error?) {
@@ -102,25 +126,26 @@ open class ImageMessageView: UIView, DownloadableContent, UploadableContent {
     }
     
     open func uploadStarted() {
-        showProgressView()
+//        showProgressView()
     }
 
     open func hideProgressView() {
-        progressView.isHidden = true
-        progressView.progress = 0
+        progressView?.isHidden = true
+        progressView?.progress = 0
         blurView?.isHidden = true
-        detailLabel.isHidden = true
+        detailLabel?.isHidden = true
         updateVideoIcon()
     }
 
     open func showProgressView() {
-        progressView.isHidden = false
+        progressView?.stopSpinProgressBackgroundLayer()
+        progressView?.isHidden = false
         blurView?.isHidden = false
-        videoImageView.isHidden = true
+        videoView?.isHidden = true
     }
     
     open func updateVideoIcon() {
-        videoImageView.isHidden = !videoIconVisible
+        videoView?.isHidden = !videoIconVisible
     }
 
 }

@@ -1,6 +1,6 @@
 //
 //  ReplyView.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 08/07/2020.
 //
@@ -118,7 +118,7 @@ open class ReplyView : UIView {
         if let message = message as? HasPlaceholder {
             placeholder = message.placeholder()
         }
-        show(title: message.messageSender().userName(), message: message.messageText(), imageURL: url, placeholder: placeholder, duration: duration)
+        show(title: message.messageSender().userName() ?? "", message: message.messageText(), imageURL: url, placeholder: placeholder, duration: duration)
     }
     
     open func message() -> Message? {

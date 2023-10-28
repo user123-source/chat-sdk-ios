@@ -1,6 +1,6 @@
 //
 //  TextMessageContent.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 20/07/2020.
 //
@@ -8,6 +8,7 @@
 import Foundation
 import KeepLayout
 import SDWebImage
+import ChatSDK
 
 open class TextMessageContent: DefaultMessageContent {
     
@@ -18,7 +19,7 @@ open class TextMessageContent: DefaultMessageContent {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+        
     open lazy var replyView: MessageReplyView = {
         return ChatKit.provider().messageReplyView()
     }()
@@ -33,7 +34,7 @@ open class TextMessageContent: DefaultMessageContent {
         label.keepBottomInset.equal = ChatKit.config().bubbleInsets.bottom
         label.keepRightInset.equal = ChatKit.config().bubbleInsets.right
         label.keepTopInset.equal = KeepHigh(ChatKit.config().bubbleInsets.top)
-        
+                
         return view
     }()
     
@@ -46,21 +47,28 @@ open class TextMessageContent: DefaultMessageContent {
 
         if message.messageDirection() == .incoming {
             replyView.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMinXMaxYCorner, .layerMaxXMinYCorner]
+            label.textColor = ChatKit.asset(color: ChatKit.config().incomingMessageTextColor)
         }
         if message.messageDirection() == .outgoing {
             replyView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMinYCorner]
+            label.textColor = ChatKit.asset(color: ChatKit.config().outgoingMessageTextColor)
         }
         if let reply = message.messageReply() {
             showReply(title: reply.replyTitle(), text: reply.replyText(), imageURL: reply.replyImageURL(), placeholder: reply.replyPlaceholder())
         } else {
             hideReply()
         }
-        label.text = message.messageText()
-
-//        label.sizeToFit()
-//        label.updateConstraints()
-//        label.setNeedsLayout()
-//        containerView.setNeedsLayout()
+        
+        // We do this to make space for the time label
+        if let text = message.messageText() {
+            if message.messageDirection() == .outgoing && message.messageReadStatus() != .none {
+                label.text = text + "             "
+            } else {
+                label.text = text + "        "
+            }
+        } else {
+            label.text = nil
+        }
 
     }
     

@@ -1,6 +1,6 @@
 //
 //  QRCodeViewController.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 13/07/2020.
 //
@@ -45,11 +45,9 @@ public class QRCodeViewController: UIViewController {
         qrCodeImageView.image = qrImage
         textView.text = code
         
-        if #available(iOS 13.0, *) {
-        } else {
-//            if presentingViewController != nil {
-                navigationItem.leftBarButtonItem = UIBarButtonItem(title: Bundle.t(bBack), style: .plain, target: self, action: #selector(back))
-//            }
+        let version = ProcessInfo.processInfo.operatingSystemVersion;
+        if (version.majorVersion < 13 || BChatSDK.config().alwaysShowBackButtonOnModalViews) {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: Bundle.t(bBack), style: .plain, target: self, action: #selector(back))
         }
         
         textView.isUserInteractionEnabled = false

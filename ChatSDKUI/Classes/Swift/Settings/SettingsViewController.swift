@@ -1,6 +1,6 @@
 //
 //  SettingsViewController.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 13/11/2020.
 //
@@ -15,7 +15,7 @@ public class SettingsViewController: QuickTableViewController {
         title = Bundle.t(bSettings)
 
         let version = ProcessInfo.processInfo.operatingSystemVersion;
-        if (version.majorVersion < 13) {
+        if (version.majorVersion < 13 || BChatSDK.config().alwaysShowBackButtonOnModalViews) {
             self.navigationItem.leftBarButtonItem = UIBarButtonItem.init(title: Bundle.t(bBack), style: .done, target: self, action: #selector(back));
         }
 

@@ -1,6 +1,6 @@
 //
 //  ColorProvider.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 16/06/2020.
 //
@@ -60,7 +60,7 @@ import Foundation
             } else if (name == outcomingDefaultSelectedBubbleColor) {
                 color = "#41d75d"
             } else if (name == outcomingDefaultTextColor) {
-                color = "#000000"
+                color = "#FFFFFF"
             } else if (name == registerButton) {
                 color = "#3ac86e"
             } else if (name == replyDividerColor) {

@@ -22,6 +22,9 @@ typedef enum {
     bMessageTypeSticker = 6,
     bMessageTypeFile = 7,
     bMessageTypeBase64Image = 8,
+    bMessageTypeSnap = 9,
+    bMessageTypeContact = 10,
+    bMessageTypeGif = 11,
     bMessageTypeSilent = 98,
     bMessageTypeCustom = 99,
 } bMessageType;
@@ -60,8 +63,10 @@ typedef enum {
 #define bMessageImageData @"image-data"
 #define bMessageImageHeight @"image-height"
 #define bMessageVideoURL @"video-url"
+#define bMessageSize @"size"
 #define bMessageFileURL @"file-url"
 #define bMessageMimeType @"mime-type"
+#define bMessageImagePreview @"image-preview"
 
 #define bMessageLongitude @"longitude"
 #define bMessageLatitude @"latitude"
@@ -115,6 +120,8 @@ typedef enum {
 -(void) setRead: (NSNumber *) read;
 -(BOOL) isRead;
 -(BOOL) isDelivered;
+
+-(NSNumber *) delivered;
 
 /**
  * @brief Message creation date

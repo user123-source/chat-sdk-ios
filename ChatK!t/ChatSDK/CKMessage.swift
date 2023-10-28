@@ -123,7 +123,7 @@ open class CKDownloadableMessage: CKMessage, DownloadableMessage, UploadableMess
     
     open var isDownloading: Bool = false
     
-    public override init(message: PMessage) {
+    override public init(message: PMessage) {
         super.init(message: message)
     }
         
@@ -164,6 +164,16 @@ open class CKImageMessage: CKMessage, ImageMessage {
     
     open func uploadFinished(_ data: Data?, error: Error?) {
 
+    }
+    
+    public override func placeholder() -> UIImage? {
+        if let placeholder = message.placeholder() {
+            return UIImage(data: placeholder)
+        }
+        if let meta = message.meta(), let base64 = meta[bMessageImagePreview] as? String {
+            return UIImage.fromBase64(base64: base64)
+        }
+        return nil
     }
 
 }
@@ -209,6 +219,16 @@ open class CKVideoMessage: CKDownloadableMessage, ImageMessage, VideoMessage {
     open func imageURL() -> URL? {
         return message.imageURL()
     }
+    
+//    public override func placeholder() -> UIImage? {
+//        if let placeholder = message.placeholder() {
+//            return UIImage(data: placeholder)
+//        }
+//        if let meta = message.meta(), let base64 = meta[bMessageImagePreview] as? String {
+//            return UIImage.fromBase64(base64: base64)
+//        }
+//        return nil
+//    }
 
     open override func startDownload() {
         if let path = messageMeta()?[bMessageVideoURL] as? String {

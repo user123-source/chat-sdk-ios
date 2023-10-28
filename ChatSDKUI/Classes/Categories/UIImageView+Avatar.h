@@ -1,6 +1,6 @@
 //
 //  UIImageView+Avatar.h
-//  AFNetworking
+
 //
 //  Created by ben3 on 28/06/2019.
 //
@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(UIImage *) userDefaultImage;
 -(void) setDefaultUserImage;
 -(void) loadThreadImage: (id<PThread>) thread;
++(NSString * _Nullable) threadImageURL: (id<PThread>) thread;
 
 @end
 

@@ -1,14 +1,14 @@
 Pod::Spec.new do |s|
   s.name             = "ChatSDKFirebase"
-  s.version          = "5.1.4"
+  s.version          = "5.2.2"
   s.summary          = "Chat SDK - Mobile messaging framework for iOS"
-  s.homepage         = "https://sdk.chat"
+  s.homepage         = "https://chatsdk.co"
   s.license          = { :type => 'Chat SDK License' }
   s.author           = { "Ben Smiley" => "ben@chatsdk.co" }
   s.source           = { :git => "https://github.com/chat-sdk/chat-sdk-ios.git", :tag => s.version.to_s }
 #   s.module_name      = 'ChatSDKFirebase'
 
-  s.platform     = :ios, '10.0'
+  s.platform     = :ios, '11.0'
   s.requires_arc = true
   s.swift_version = "5.0"
   # s.static_framework = true
@@ -27,8 +27,8 @@ Pod::Spec.new do |s|
 
 	s.source_files = ['ChatSDKFirebase/Adapter/Classes/**/*.{h,m,swift}']
 	
-  s.dependency 'Firebase/Auth'
-  s.dependency 'Firebase/Database'
+  s.dependency 'FirebaseAuth'
+  s.dependency 'FirebaseDatabase'
 
   s.dependency 'ChatSDKFirebase/Core' 
 	s.dependency 'ChatSDK'
@@ -39,8 +39,9 @@ Pod::Spec.new do |s|
 
 	s.source_files = ['ChatSDKFirebase/Upload/Classes/**/*.{h,m,swift}']
 
-  s.dependency 'Firebase/Database'
-  s.dependency 'Firebase/Storage'
+  s.dependency 'FirebaseAuth'
+  s.dependency 'FirebaseDatabase'
+  s.dependency 'FirebaseStorage'
 	s.dependency 'ChatSDK'
   # s.dependency 'ChatSDKFirebase/Adapter' 
 
@@ -50,9 +51,10 @@ Pod::Spec.new do |s|
 
 	s.source_files = ['ChatSDKFirebase/Push/Classes/**/*.{h,m,swift}']
 
-    s.dependency 'Firebase/Database'
-    s.dependency 'Firebase/Messaging'
-    s.dependency 'Firebase/Functions'
+    s.dependency 'FirebaseAuth'
+    s.dependency 'FirebaseDatabase'
+    s.dependency 'FirebaseMessaging'
+    s.dependency 'FirebaseFunctions'
     s.dependency 'ChatSDK'
     s.dependency 'ChatSDKFirebase/Core' 
 
@@ -63,11 +65,11 @@ Pod::Spec.new do |s|
 	s.source_files = ['ChatSDKFirebase/FirebaseUI/Classes/**/*.{h,m,swift}']
 
 	s.dependency 'ChatSDKFirebase/Adapter'
-	s.dependency 'FirebaseUI/Auth'
-	s.dependency 'FirebaseUI/Email'
-  	s.dependency 'FirebaseUI/Phone'
-  	s.dependency 'FirebaseUI/OAuth'
-	  s.dependency 'ChatSDKFirebase/Core' 
+    s.dependency 'ChatSDKFirebase/Core'
+
+  s.dependency 'FirebaseEmailAuthUI', '~>11.0'
+	s.dependency 'FirebasePhoneAuthUI', '~>11.0'
+	s.dependency 'FirebaseOAuthUI', '~>11.0'
 
   end
       

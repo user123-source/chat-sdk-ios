@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <ChatSDK/PNetworkAdapter.h>
 
+@protocol GifMessageHandler;
 
 
 @interface BAbstractNetworkAdapter : NSObject<PNetworkAdapter>
@@ -39,5 +40,6 @@
 @property (nonatomic, readwrite) id<PEventHandler> event;
 @property (nonatomic, readwrite) id<PThreadHandler> thread;
 @property (nonatomic, readwrite) id<CallHandler> call;
+@property (nonatomic, readwrite) id<GifMessageHandler> gifMessage;
 
 @end

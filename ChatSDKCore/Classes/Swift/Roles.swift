@@ -1,6 +1,6 @@
 //
 //  Affiliation.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 17/11/2020.
 //
@@ -28,6 +28,7 @@ public enum Role: String {
     case participant = "participant"
     case visitor = "visitor"
     case none = "none"
+    case undefined = "undefined"
 }
 
 @objc public class BRole: NSObject {

@@ -1,6 +1,6 @@
  //
 //  BConfiguration.m
-//  AFNetworking
+
 //
 //  Created by Ben on 11/7/17.
 //
@@ -55,7 +55,8 @@
 @synthesize encryptGroupThreads;
 @synthesize allowUserToRejoinGroup;
 @synthesize legacyCropperEnabled;
-
+@synthesize timeAgoDateFormat;
+@synthesize allowEmptyBody;
 
 @synthesize showMessageAvatarAtPosition;
 @synthesize messageBubbleMaskFirst;
@@ -112,6 +113,17 @@
 @synthesize xmppOutgoingMessageQueueRetryTime;
 @synthesize xmppOutgoingMessageAlwaysAdd;
 @synthesize xmppAutoAcceptIncomingPresenceRequests;
+@synthesize threadUnreadViewBackgroundColor;
+@synthesize threadUnreadViewTextColor;
+
+@synthesize threadCellTypingTextColor;
+@synthesize threadCellLastMessageTextColor;
+
+@synthesize sendBase64ImagePreview;
+@synthesize imagePreviewMaxSize;
+@synthesize imagePreviewQuality;
+@synthesize groupImagesEnabled;
+
 
 -(instancetype) init {
     if((self = [super init])) {
@@ -182,12 +194,14 @@
         showProfileViewOnTap = YES;
         
         rootPath = @"pre_1";
-        identiconBaseURL = @"https://identicon.sdk.chat?value=%@&size=400.png";
-        
+//        identiconBaseURL = @"https://identicon.sdk.chat?value=%@&size=400.png";
+        identiconBaseURL = nil;
+
         anonymousLoginEnabled = NO;
         
         userChatInfoEnabled = YES;
         threadDestructionEnabled = YES;
+        timeAgoDateFormat = @"dd/MM/yy";
         
         maxImageDimension = 600;
         
@@ -203,8 +217,8 @@
         xmppPingInterval = 15;
         xmppPingTimeout = 15;
         
-        messageDeletionListenerLimit = 30;
-        messageHistoryDownloadLimit = 30;
+        messageDeletionListenerLimit = -1;
+        messageHistoryDownloadLimit = 200;
         readReceiptMaxAgeInSeconds = 7 * bDays;
         
         textInputViewMaxCharacters = 0;
@@ -246,6 +260,19 @@
         xmppAutoAcceptIncomingPresenceRequests = true;
         
         replyThumbnailSize = 60 * 3;
+        
+        threadUnreadViewBackgroundColor = UIColor.lightGrayColor;
+        threadUnreadViewTextColor = UIColor.blackColor;
+        
+        threadCellTypingTextColor = UIColor.darkGrayColor;
+        threadCellLastMessageTextColor = UIColor.lightGrayColor;
+        
+        sendBase64ImagePreview = true;
+        imagePreviewMaxSize = 80;
+        imagePreviewQuality = 1;
+        
+        groupImagesEnabled = true;
+        
     }
     return self;
 }

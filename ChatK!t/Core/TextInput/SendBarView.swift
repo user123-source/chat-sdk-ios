@@ -1,6 +1,6 @@
 //
 //  SendBarView.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 14/09/2020.
 //
@@ -11,6 +11,7 @@ import NextGrowingTextView
 
 open class SendBarView: UIView, UITextViewDelegate {
     
+    open var textViewContainer: UIView = UIView()
     open var textView: NextGrowingTextView?
     public let divider = UIView()
 
@@ -51,9 +52,12 @@ open class SendBarView: UIView, UITextViewDelegate {
         textView = NextGrowingTextView()
         textView?.delegate = self
         textView?.textView.delegate = self
-        textView?.textView.font = UIFont.systemFont(ofSize: 16)
-        textView?.layer.cornerRadius = 10
-        textView?.layer.borderWidth = 1
+        textView?.textView.font = ChatKit.config().sendBarTextViewFont
+        
+//        textView?.textView.autocorrectionType = .no
+        
+//        textView?.layer.cornerRadius = 10
+//        textView?.layer.borderWidth = 1
         textView?.isScrollEnabled = true
         textView?.maxNumberOfLines = ChatKit.config().sendBarMaxLines
 
@@ -62,12 +66,19 @@ open class SendBarView: UIView, UITextViewDelegate {
         }
         textView?.delegates.willChangeHeight = { height in
         }
+        
+        textViewContainer.addSubview(textView!)
+        textViewContainer.layer.cornerRadius = 10
+        textViewContainer.layer.borderWidth = 1
+        
+        textView?.keepTopInset.equal = ChatKit.config().sendBarTextViewTopPadding
+        textView?.keepBottomInset.equal = ChatKit.config().sendBarTextViewBottomPadding
+        textView?.keepLeftInset.equal = ChatKit.config().sendBarTextViewStartPadding
+        textView?.keepRightInset.equal = ChatKit.config().sendBarTextViewEndPadding
 
-        
-        
         addSubview(divider)
         addSubview(startButtonsView)
-        addSubview(textView!)
+        addSubview(textViewContainer)
         addSubview(endButtonsView)
         
         divider.keepTopInset.equal = 0
@@ -78,18 +89,18 @@ open class SendBarView: UIView, UITextViewDelegate {
         startButtonsView.keepTopInset.equal = ChatKit.config().sendBarViewTopPadding
         startButtonsView.keepLeftInset.equal = ChatKit.config().sendBarViewStartPadding
         startButtonsView.keepBottomInset.equal = ChatKit.config().sendBarViewBottomPadding
-        startButtonsView.keepRightOffsetTo(textView!)?.equal = ChatKit.config().sendBarViewElementSpacing
+        startButtonsView.keepRightOffsetTo(textViewContainer)?.equal = ChatKit.config().sendBarViewElementSpacing
         startButtonsView.keepWidth.equal = KeepHigh(0)
 
         endButtonsView.keepTopInset.equal = ChatKit.config().sendBarViewTopPadding
         endButtonsView.keepRightInset.equal = ChatKit.config().sendBarViewEndPadding
         endButtonsView.keepBottomInset.equal = ChatKit.config().sendBarViewBottomPadding
-        endButtonsView.keepLeftOffsetTo(textView!)?.equal = ChatKit.config().sendBarViewElementSpacing
+        endButtonsView.keepLeftOffsetTo(textViewContainer)?.equal = ChatKit.config().sendBarViewElementSpacing
         endButtonsView.keepWidth.equal = KeepHigh(0)
 
-        textView?.keepTopInset.equal = ChatKit.config().sendBarViewTopPadding
-        textView?.keepBottomInset.equal = ChatKit.config().sendBarViewBottomPadding
-
+        textViewContainer.keepTopInset.equal = ChatKit.config().sendBarViewTopPadding
+        textViewContainer.keepBottomInset.equal = ChatKit.config().sendBarViewBottomPadding
+        
         background = ChatKit.provider().makeBackground(blur: blurEnabled)
         insertSubview(background!, at: 0)
         background?.keepInsets.equal = 0
@@ -103,9 +114,9 @@ open class SendBarView: UIView, UITextViewDelegate {
     }
     
     open func updateColors() {
-        textView?.backgroundColor = ChatKit.asset(color: "gray_4")
-        textView?.layer.borderColor = ChatKit.asset(color: "gray_6").cgColor
-        divider.backgroundColor = ChatKit.asset(color: "gray_6")
+        textViewContainer.backgroundColor = ChatKit.asset(color: ChatKit.config().sendBarTextViewBackgroundColor)
+        textViewContainer.layer.borderColor = ChatKit.asset(color: ChatKit.config().sendBarTextViewBorderColor).cgColor
+        divider.backgroundColor = ChatKit.asset(color: ChatKit.config().sendBarTextViewDividerColor)
     }
     
     open func setBackgroundAlpha(alpha: CGFloat) {
@@ -269,12 +280,11 @@ open class SendBarView: UIView, UITextViewDelegate {
     }
     
     open func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        let old = textView.text as NSString?
-        if let newText = old?.replacingCharacters(in: range, with: text) {
-            if newText.isEmptyOrBlank() != textView.text.isEmptyOrBlank() {
-                layout(hasText: !newText.isEmpty)
-            }
-        }
+        let old = textView.text as NSString? ?? ""
+        let newText = old.replacingCharacters(in: range, with: text)
+
+        layout(hasText: !newText.isEmptyOrBlank())
+        
         startTyping()
         return true
     }
@@ -377,4 +387,5 @@ extension String {
         return !isEmptyOrBlank()
     }
 }
+
 

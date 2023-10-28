@@ -19,11 +19,10 @@ open class Config {
     open var userChatInfoEnabled = true
 
     open var messageSelectionEnabled = true
+    open var hideAvatarForOutgoingMessages = true
 
     open var timeFormat = "HH:mm"
-    
     open var messageHistoryTimeFormat = "dd/MM/yy hh:mm:ss"
-
     open var messagesViewSectionTimeFormat = "dd/MM/yy"
 
     // SendBarView layout parameters
@@ -36,7 +35,8 @@ open class Config {
     open var sendBarMaxLines = 5
 
     open var animationDuration = 0.3
-    
+    open var showFileTransferPercentage = false
+
     open var blurEnabled = true
     open var blurStyle: UIBlurEffect.Style?
     
@@ -71,15 +71,30 @@ open class Config {
     open var outgoingBubbleColor = "outgoing_bubble"
     open var outgoingBubbleSelectedColor = "outgoing_bubble_selected"
 
+    open var outgoingMessageTextColor = "outgoing_text"
+    open var incomingMessageTextColor = "incoming_text"
+
+    open var outgoingBubbleBorderColor = "clear"
+    open var outgoingBubbleBorderWidth: Float = 0.0
+
+    open var incomingBubbleBorderColor = "clear"
+    open var incomingBubbleBorderWidth: Float = 0.0
+
     open var incomingBubbleColor = "incoming_bubble"
     open var incomingBubbleSelectedColor = "incoming_bubble_selected"
     
     open var outgoingMessageNibName = "OutgoingMessageCell"
     open var incomingMessageNibName = "IncomingMessageCell"
-    
+
+    open var outgoingMessageNib: UINib? = nil
+    open var incomingMessageNib: UINib? = nil
+
     open var estimatedMessageCellHeight:CGFloat = 100
     open var estimatedMessageSectionHeight:CGFloat = 100
-    
+
+    open var readReceiptImageWidth:CGFloat = 18
+    open var readReceiptImageHeight:CGFloat = 18
+
     open var downloadFolderName = "ChatKit"
     
     open var minimumAudioRecordingLength = 1
@@ -87,6 +102,22 @@ open class Config {
     open var typingTimeout: Double = 3
     
     open var imageEditorEnabled = true
+    open var imageViewInChatHeader = true
+    
+    open var timeAgoDateFormat = "dd/MM/yy"
+    open var timeAgoDayFormat = "EEE"
+    open var cacheUserImage = false
+
+    open var sendBarTextViewBorderColor = "gray_6"
+    open var sendBarTextViewBackgroundColor = "gray_4"
+    open var sendBarTextViewDividerColor = "gray_6"
+    open var sendBarTextViewBorderWidth = 1
+    open var sendBarTextViewCornerRadius = 10
+    open var sendBarTextViewTopPadding = 0
+    open var sendBarTextViewBottomPadding = 0
+    open var sendBarTextViewStartPadding = 0
+    open var sendBarTextViewEndPadding = 0
+    open var sendBarTextViewFont = UIFont.systemFont(ofSize: 16)
 
 //    open var loadImageMessageFromURL = false
     
@@ -99,6 +130,7 @@ open class Config {
     open lazy var imageMessageSize: CGSize = {
         let dim = min(400, UIScreen.main.bounds.width - 115)
         return CGSize(width: dim, height: dim)
+        
     }()
 
 }

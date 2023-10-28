@@ -22,7 +22,11 @@
 "location" = "Location";
 "file" = "File";
 "sticker" = "Sticker";
+"giphy" = "Giphy";
 "video" = "Video";
+"processing" = "Processing";
+"processed_of_" = "Processed %d/%d";
+"exported_of_" = "Exported %d/%d";
 
 "messageSendFailed" = "Message send failed. Tap to retry";
 

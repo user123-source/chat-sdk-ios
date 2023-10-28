@@ -1,6 +1,6 @@
 //
 //  BFirebaseThreadHandler.m
-//  AFNetworking
+
 //
 //  Created by ben3 on 06/07/2020.
 //
@@ -13,6 +13,7 @@
 
 -(RXPromise *) createThreadWithUsers: (NSArray *) users
                                 name: (NSString *) name
+                            imageURL: (NSString *) imageURL
                                 type: (bThreadType) type
                             entityID: (NSString *) entityID
                          forceCreate: (BOOL) force
@@ -34,6 +35,11 @@
     }
     else {
         threadModel = [self createThreadWithUsers:users name:name type: type];
+        
+        if (imageURL) {
+            [threadModel setMetaValue:imageURL forKey:bImageURL];
+        }
+
         CCThreadWrapper * wrapper = [FirebaseNetworkAdapterModule.shared.firebaseProvider threadWrapperWithModel: threadModel];
         
         if (entityID) {
@@ -239,6 +245,20 @@
     return enabled;
 }
 
+-(BOOL) canEditThread: (NSString *) threadEntityID {
+    if ([self rolesEnabled:threadEntityID]) {
+        NSString * role = [self role:threadEntityID forUser:BChatSDK.currentUserID];
+        return [role isOwnerOrAdmin];
+    }
+    return false;
+}
+
+-(RXPromise *) pushThreadMeta: (NSString *) threadEntityID {
+    CCThreadWrapper * wrapper = [FirebaseNetworkAdapterModule.shared.firebaseProvider threadWrapperWithEntityID:threadEntityID];
+    return [wrapper pushMeta];
+}
+
+
 -(BOOL) canChangeRole: (NSString *) threadEntityID forUser: (NSString *) userEntityID {
     if (![self rolesEnabled:threadEntityID]) {
         return NO;
@@ -257,6 +277,7 @@
     __block NSString * role = nil;
     [BChatSDK.db performOnMainAndWait:^{
         id<PThread> thread = [BChatSDK.db fetchEntityWithID:threadEntityID withType:bThreadEntity];
+        id<PUser> user = [BChatSDK.db fetchEntityWithID:userEntityID withType:bUserEntity];
         id<PUserConnection> connection = [thread connection:userEntityID];
         if (connection) {
             role = connection.role;
@@ -306,13 +327,21 @@
 
 -(BOOL) canLeaveThread: (id<PThread>) thread {
     if ([thread typeIs:bThreadFilterGroup]) {
-        NSString * myRole = [self role:thread forUser:BChatSDK.currentUserID];
-        return [Permissions isOr:myRole roles:@[Permissions.owner, Permissions.admin, Permissions.member, Permissions.watcher]];
+        if ([thread.members containsObject:BChatSDK.currentUser]) {
+            NSString * myRole = [self role:thread forUser:BChatSDK.currentUserID];
+            return [Permissions isOr:myRole roles:@[Permissions.owner, Permissions.admin, Permissions.member, Permissions.watcher]];
+        }
     }
     return NO;
 }
 
 -(BOOL) canJoinThread: (id<PThread>) thread {
+    if ([thread typeIs:bThreadFilterGroup]) {
+        if (![thread.members containsObject:BChatSDK.currentUser]) {
+            NSString * myRole = [self role:thread forUser:BChatSDK.currentUserID];
+            return [Permissions isOr:myRole roles:@[Permissions.owner, Permissions.admin, Permissions.member, Permissions.watcher]];
+        }
+    }
     return NO;
 }
 
@@ -327,6 +356,10 @@
         }
     }];
     return canRemove;
+}
+
+-(BOOL) threadImagesSupported {
+    return YES;
 }
 
 @end

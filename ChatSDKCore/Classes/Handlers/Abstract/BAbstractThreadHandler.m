@@ -1,6 +1,6 @@
 //
 //  BAbstractThreadHandler.m
-//  AFNetworking
+
 //
 //  Created by ben3 on 06/07/2020.
 //
@@ -123,12 +123,12 @@
                        threadCreated: (void(^)(NSError * error, id<PThread> thread)) threadCreated {
     return [self createThreadWithUsers:users
                                   name:name
+                              imageURL: nil
                                   type:bThreadTypeNone
                               entityID:nil
                            forceCreate:force
                          threadCreated:threadCreated];
 }
-
 
 -(RXPromise *) createThreadWithUsers: (NSArray *) users
                                 name: (NSString *) name
@@ -137,6 +137,23 @@
                                   name:name
                            forceCreate:NO
                          threadCreated:threadCreated];
+
+}
+
+-(RXPromise *) createThreadWithUsers: (NSArray *) users
+                                name: (NSString *) name
+                               imageURL: (NSString *) imageURL
+                       threadCreated: (void(^)(NSError * error, id<PThread> thread)) threadCreated {
+
+    return [self createThreadWithUsers:users
+                                  name:name
+                              imageURL:imageURL
+                                  type:bThreadTypeNone
+                              entityID:nil
+                           forceCreate:NO
+                         threadCreated:threadCreated];
+
+
 }
 
 -(RXPromise *) createThreadWithUsers: (NSArray *) users
@@ -198,7 +215,7 @@
 
 -(RXPromise *) leaveThread: (id<PThread>) thread {
     id<PUser> user = BChatSDK.currentUser;
-    return [self removeUsers:@[user] fromThread:thread];
+    return [self removeUsers:@[user.entityID] fromThread:thread.entityID];
 }
 
 -(RXPromise *) joinThread: (id<PThread>) thread {
@@ -305,7 +322,15 @@
     return [RXPromise resolveWithResult:Nil];
 }
 
+-(RXPromise *) pushThreadMeta: (NSString *) threadEntityID {
+    return [RXPromise resolveWithResult:nil];
+}
+
 -(BOOL) canMuteThreads {
+    return false;
+}
+
+-(BOOL) canEditThread: (NSString *) threadEntityID {
     return false;
 }
 
@@ -429,6 +454,10 @@
 
 -(RXPromise *) refreshRoles: (NSString *) threadEntityID {
     return [RXPromise resolveWithResult:nil];
+}
+
+-(BOOL) threadImagesSupported {
+    return NO;
 }
 
 @end

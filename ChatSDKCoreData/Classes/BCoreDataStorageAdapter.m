@@ -23,6 +23,9 @@ static void * kMainQueueKey = (void *) "Key1";
         _entityCache = [NSMutableDictionary new];
         
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:Nil queue:0 usingBlock:^(NSNotification * notification) {
+            
+            [self save];
+            
         }];
 
         [[NSNotificationCenter defaultCenter] addObserverForName:NSManagedObjectContextDidSaveNotification object:Nil queue:0 usingBlock:^(NSNotification * notification) {
@@ -397,7 +400,11 @@ static void * kMainQueueKey = (void *) "Key1";
         _store = [[NSPersistentStoreCoordinator alloc]
                   initWithManagedObjectModel:[self managedObjectModel]];
         
-        NSDictionary * options = @{NSMigratePersistentStoresAutomaticallyOption: @YES, NSInferMappingModelAutomaticallyOption: @YES};
+        NSDictionary * options = @{
+            NSMigratePersistentStoresAutomaticallyOption: @YES,
+            NSInferMappingModelAutomaticallyOption: @YES,
+            NSPersistentStoreFileProtectionKey: NSFileProtectionComplete,
+        };
         
         if(![_store addPersistentStoreWithType:NSSQLiteStoreType
                                  configuration:nil URL:storeUrl options:options error:&error]) {

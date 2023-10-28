@@ -1,4 +1,4 @@
- //
+//
 //  AudioMessageContent.swift
 //  ChatK!t
 //
@@ -9,66 +9,83 @@ import Foundation
 import FFCircularProgressView
 import AVFoundation
 
- open class AudioMessageContent: DefaultMessageContent, DownloadableContent, UploadableContent {
+open class AudioMessageContent: DefaultMessageContent, DownloadableContent, UploadableContent {
 
-    public let _view: AudioMessageView = .fromNib()
-    
-    open override func view() -> UIView {
-        return _view
+    open lazy var _audioMessageView: AudioMessageView = {
+        AudioMessageView.fromNib()
+    }()
+
+    open var audioMessageView: AudioMessageView {
+        return _audioMessageView
     }
         
+    open override func view() -> UIView {
+        return audioMessageView
+    }
+
     open override func bind(_ message: AbstractMessage, model: MessagesModel) {
         super.bind(message, model: model)
-        _view.bind(message, model: model)
+        audioMessageView.bind(message, model: model)
     }
     
     open func setDownloadProgress(_ progress: Float, total: Float) {
-        _view.setDownloadProgress(progress, total: total)
+        audioMessageView.setDownloadProgress(progress, total: total)
     }
     
     open func downloadFinished(_ url: URL?, error: Error?) {
-        _view.downloadFinished(url, error: error)
+        audioMessageView.downloadFinished(url, error: error)
     }
     
     open func downloadPaused() {
-        _view.downloadPaused()
+        audioMessageView.downloadPaused()
     }
     
     open func downloadStarted() {
-        _view.downloadStarted()
+        audioMessageView.downloadStarted()
     }
     
     open func setUploadProgress(_ progress: Float, total: Float) {
-        _view.setUploadProgress(progress, total: total)
+        audioMessageView.setUploadProgress(progress, total: total)
     }
     
     open func uploadFinished(_ url: URL?, error: Error?) {
-        _view.uploadFinished(url, error: error)
+        audioMessageView.uploadFinished(url, error: error)
     }
     
     open func uploadStarted() {
-        _view.uploadStarted()
+        audioMessageView.uploadStarted()
     }
 }
 
- open class AudioMessageView: UIView, DownloadableContent, UploadableContent {
+open class  AudioMessageView: UIView, DownloadableContent, UploadableContent {
     
     open var message: Message?
     
-    @IBOutlet weak var progressView: FFCircularProgressView!
-    @IBOutlet weak var playPauseButton: UIButton!
-    
-    @IBOutlet weak var currentTimeLabel: UILabel!
-    @IBOutlet weak var totalTimeLabel: UILabel!
-    @IBOutlet weak var progressSlider: UISlider!
+    @IBOutlet weak var ibProgressView: FFCircularProgressView!
+    @IBOutlet weak var ibPlayPauseButton: UIButton!
+    @IBOutlet weak var ibCurrentTimeLabel: UILabel!
+    @IBOutlet weak var ibProgressSlider: UISlider!
+
+    @IBAction func ibPlayPauseButtonPressed(_ sender: Any) {
+        playPauseButtonPressed(sender)
+    }
+
+    @IBAction func ibProgressSliderValueChanged(_ sender: Any, event: Any) {
+        progressSliderValueChanged(sender, event: event)
+    }
+
+    open var progressView: FFCircularProgressView? { ibProgressView }
+    open var playPauseButton: UIButton? { ibPlayPauseButton }
+    open var currentTimeLabel: UILabel? { ibCurrentTimeLabel }
+    open var progressSlider: UISlider? { ibProgressSlider }
     
     public var timer: Timer?
     
     open override func awakeFromNib() {
         super.awakeFromNib()
-
-        progressView.tintColor = ChatKit.asset(color: "message_icon")
-        progressView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(startStopDownload)))
+        progressView?.tintColor = ChatKit.asset(color: "message_icon")
+        progressView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(startStopDownload)))
+        
     }
     
     @objc open func startStopDownload() {
@@ -83,7 +100,7 @@ import AVFoundation
     
     open func startDownloading() {
         audioMessage()?.startDownload()
-        progressView.startSpinProgressBackgroundLayer()
+        progressView?.startSpinProgressBackgroundLayer()
     }
     
     open func pauseDownloading() {
@@ -91,9 +108,9 @@ import AVFoundation
     }
     
     open func setDownloadProgress(_ progress: Float, total: Float) {
-        progressView.progress = CGFloat(progress)
+        progressView?.progress = CGFloat(progress)
         if progress > 0 {
-            progressView.stopSpinProgressBackgroundLayer()
+            progressView?.stopSpinProgressBackgroundLayer()
         }
     }
 
@@ -109,41 +126,41 @@ import AVFoundation
     
     open func implDownloadFinished(_ url: URL?, error: Error?) {
         if let _ = error {
-            progressView.isHidden = false
-            playPauseButton.isHidden = true
-            progressView.progress = 0
+            progressView?.isHidden = false
+            playPauseButton?.isHidden = true
+            progressView?.progress = 0
         } else {
-            progressView.isHidden = true
-            progressView.stopSpinProgressBackgroundLayer()
-            playPauseButton.isHidden = false
+            progressView?.isHidden = true
+            progressView?.stopSpinProgressBackgroundLayer()
+            playPauseButton?.isHidden = false
             if let _ = url {
-                playPauseButton.isEnabled = true
-                progressSlider.isEnabled = true
+                playPauseButton?.isEnabled = true
+                progressSlider?.isEnabled = true
             } else {
-                playPauseButton.isEnabled = false
-                progressSlider.isEnabled = false
+                playPauseButton?.isEnabled = false
+                progressSlider?.isEnabled = false
             }
-            progressSlider.setNeedsLayout()
-            progressSlider.layoutIfNeeded()
+            progressSlider?.setNeedsLayout()
+            progressSlider?.layoutIfNeeded()
         }
         
     }
 
     open func downloadPaused() {
-        progressView.progress = 0
+        progressView?.progress = 0
     }
 
     open func downloadStarted() {
-        progressView.stopSpinProgressBackgroundLayer()
+        progressView?.stopSpinProgressBackgroundLayer()
     }
 
-    @IBAction func playPauseButtonPressed(_ sender: Any) {
+    @objc open func playPauseButtonPressed(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
-            if let this = self {
-                if !this.playPauseButton.isSelected {
-                    self?.play()
-                } else {
+            if let this = self, let button = self?.playPauseButton {
+                if button.isSelected {
                     self?.pause()
+                } else {
+                    self?.play()
                 }
             }
         }
@@ -162,7 +179,7 @@ import AVFoundation
                 player.currentTime = 0.001
             }
             
-            playPauseButton.isSelected = true
+            playPauseButton?.isSelected = true
 
             timer?.invalidate()
             timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true, block: { [weak self] timer in
@@ -181,55 +198,76 @@ import AVFoundation
         if let player = audioMessage()?.audioPlayer() {
             player.pause()
         }
-        playPauseButton.isSelected = false
+        playPauseButton?.isSelected = false
     }
     
-    @IBAction func progressSliderValueChanged(_ sender: Any) {
+    @objc open func progressSliderValueChanged(_ sender: Any, event: Any) {
         if let player = audioMessage()?.audioPlayer() {
-            let pos = Double(progressSlider.value)
+            let pos = Double(progressSlider?.value ?? 0)
             player.currentTime = pos
-            currentTimeLabel.text = format(time: pos)
+            
+            updateCurrentTime(current: pos)
+            
+//            currentTimeLabel?.text = format(time: pos)
         }
     }
     
     open func bind(_ message: AbstractMessage, model: MessagesModel) {
         self.message = message
         
-        progressView.tickColor = model.bubbleColor(message)
+        progressView?.tickColor = model.bubbleColor(message)
         
         if let audioMessage = audioMessage() {
             
             // This message has not been downloaded yet
             if audioMessage.audioURL() != nil && audioMessage.localAudioURL == nil {
 
-                playPauseButton.isHidden = true
-                progressView.isHidden = false
-                progressSlider.isEnabled = false
-                                
-            } else {
-                progressView.isHidden = true
-                playPauseButton.isHidden = false
+                playPauseButton?.isHidden = true
+                progressView?.isHidden = false
+                progressSlider?.isEnabled = false
 
-                playPauseButton.isEnabled = audioMessage.localAudioURL != nil
-                progressSlider.isEnabled = true
+            } else {
+                progressView?.isHidden = true
+                playPauseButton?.isHidden = false
+
+                playPauseButton?.isEnabled = audioMessage.localAudioURL != nil
+                progressSlider?.isEnabled = true
 
             }
 
             update()
         }
+        
+//        ibTimeLabel.text = model.messageTimeFormatter.string(from: message.messageDate())
+        
     }
     
     open func update() {
-        let duration = audioMessage()?.audioPlayer()?.duration ?? audioMessage()?.duration() ?? 0
-        totalTimeLabel.text = format(time: duration)
-        let current = audioMessage()?.audioPlayer()?.currentTime ?? 0
-        currentTimeLabel.text = format(time: current)
+                
+        let current = current()
+        updateCurrentTime(current: current)
         
         progressSlider?.value = Float(current)
-        progressSlider?.maximumValue = Float(duration)
+        progressSlider?.maximumValue = Float(duration())
     }
-        
-    open func format(time: TimeInterval) -> String {
+    
+    open func updateCurrentTime(current: Double) {
+        if let player = audioMessage()?.audioPlayer(), player.isPlaying || current > 0.1 {
+            currentTimeLabel?.text = format(time: current)
+        } else {
+            currentTimeLabel?.text = format(time: duration())
+        }
+    }
+    
+    open func duration() -> Double {
+        return audioMessage()?.audioPlayer()?.duration ?? audioMessage()?.duration() ?? 0
+    }
+    
+    open func current() -> Double {
+        return audioMessage()?.audioPlayer()?.currentTime ?? 0
+    }
+
+    public class func format(time: TimeInterval) -> String {
         let totalSeconds = Int(time)
 
         let minutes = time / 60
@@ -237,13 +275,23 @@ import AVFoundation
 
         return String(format: "%.0f:%02.0f", minutes, seconds)
     }
+
+    open func format(time: TimeInterval) -> String {
+        return AudioMessageView.format(time: time)
+    }
     
     open func audioMessage() -> AudioMessage? {
         return message as? AudioMessage
     }
     
     open func setUploadProgress(_ progress: Float, total: Float) {
-        progressView.progress = CGFloat(progress)
+        if progress > 0 {
+            showProgressView()
+        }
+        if progress == 1 {
+            hideProgressView()
+        }
+        progressView?.progress = CGFloat(progress)
     }
 
     open func uploadFinished(_ url: URL?, error: Error?) {
@@ -255,12 +303,15 @@ import AVFoundation
     }
 
     open func hideProgressView() {
-        progressView.isHidden = true
-        progressView.progress = 0
+        progressView?.isHidden = true
+        progressView?.progress = 0
+        playPauseButton?.isHidden = false
     }
 
     open func showProgressView() {
-        progressView.isHidden = false
+        progressView?.isHidden = false
+        playPauseButton?.isHidden = true
     }
 
 }
+

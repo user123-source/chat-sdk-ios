@@ -11,7 +11,7 @@ import ChatSDK
 import AVKit
 import ZLImageEditor
 
-public class FileKeys {
+open class FileKeys {
     
     public static let data = "file-data"
     public static let mimeType = "file-mime-type"
@@ -50,7 +50,7 @@ public protocol OptionProvider {
         return integration!
     }
 
-    open func with(integration: ChatKitIntegration) -> ChatKitModule {
+    @objc open func with(integration: ChatKitIntegration) -> ChatKitModule {
         self.integration = integration
         return self
     }
@@ -77,9 +77,9 @@ public protocol OptionProvider {
     }
 }
 
-open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDelegate, ChatViewControllerTypingDelegate, RecordViewDelegate {
+open class  ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDelegate, ChatViewControllerTypingDelegate, RecordViewDelegate {
     
-    open unowned var model: ChatModel?
+    open var model: ChatModel?
 
     open weak var weakVC: ChatViewController?
 
@@ -122,7 +122,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
     open func addObservers() {
 
         // Add a listener to add outgoing messages to the download area so we don't have to download them again...
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] input in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] input in
             if let message = input?[bHook_PMessage] as? PMessage, let data = input?[bHook_NSData] as? Data {
                 if let m = self?.model?.messagesModel.message(for: message.entityID()) as? UploadableMessage {
                         // Get the extension
@@ -132,7 +132,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }), withName: bHookMessageDidUpload))
 
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] input in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] input in
             if let user = input?[bHook_PUser] as? PUser {
                 if self?.thread?.contains(user) ?? false {
                     self?.weakVC?.updateNavigationBar()
@@ -140,12 +140,28 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }), withName: bHookUserLastOnlineUpdated))
 
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] input in
+            if let thread = input?[bHook_PThread] as? PThread {
+                if self?.thread?.entityID() == thread.entityID() {
+                    self?.weakVC?.updateNavigationBar()
+                }
+            }
+        }), withName: bHookThreadUpdated))
+
+//        [_disposeOnDisappear add:[BChatSDK.hook addHook:[BHook hookOnMain:^(NSDictionary * dict) {
+//            id<PThread> thread = dict[bHook_PThread];
+//            if (thread) {
+//                [weakSelf reloadDataForThread:thread];
+//            }
+//        }] withNames: @[bHookThreadUpdated]]];
+
+
         // Add a listener to add outgoing messages to the download area so we don't have to download them again...
         observers.add(BChatSDK.hook().add(BHook(onMain: { [weak self] input in
             self?.updateConnectionStatus()
         }), withNames: [bHookInternetConnectivityDidChange, bHookServerConnectionStatusUpdated]))
                 
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] input in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] input in
             if let message = input?[bHook_PMessage] as? PMessage {
                 if let m = self?.model?.messagesModel.message(for: message.entityID()), let content = m.messageContent() as? UploadableContent {
                     content.uploadStarted?()
@@ -153,7 +169,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }, weight: 50), withName: bHookMessageWillUpload))
         
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] input in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] input in
             if let message = input?[bHook_PMessage] as? PMessage, let progress = input?[bHook_ObjectValue] as? Progress {
                 if let content = self?.model?.messagesModel.message(for: message.entityID())?.messageContent() as? UploadableContent {
                     //
@@ -165,7 +181,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }), withName: bHookMessageUploadProgress))
         
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] data in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] data in
             if let thread = data?[bHook_PThread] as? PThread, thread.isEqual(self?.thread) {
                 if let text = data?[bHook_NSString] as? String {
                     self?.weakVC?.setSubtitle(text: text)
@@ -175,7 +191,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }), withName: bHookTypingStateUpdated))
 
-        observers.add(BChatSDK.hook().add(BHook({ [unowned self] data in
+        observers.add(BChatSDK.hook().add(BHook(onMain: { [unowned self] data in
 //            weakVC?.showError(message: t(Strings.messageSendFailed), completion: nil)
             
             if let messageId = data?[bHook_StringId] as? String {
@@ -201,7 +217,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
             }
         }), withName: bHookUserUpdated))
         
-        observers.add(BChatSDK.hook().add(BHook({ [weak self] data in
+        observers.add(BChatSDK.hook().add(BHook(onMain:{ [weak self] data in
             if  let thread = data?[bHook_PThread] as? PThread, thread.isEqual(to: self?.thread), let user = data?[bHook_PUser] as? PUser, user.isMe() {
                 self?.updateViewForPermissions(user, thread: thread)
             }
@@ -295,7 +311,9 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
         vc.typingDelegate = self
         
         registerMessageCells()
-        addRightBarButtonItems()
+        
+        // TODO: ??
+        //addRightBarButtonItems()
 
         addSendBarActions()
         addToolbarActions()
@@ -325,7 +343,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
          var buttons = [
             NavBarButton(UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil), action: { [weak self] item in
                 if let thread = self?.thread {
-                    let flvc = BChatSDK.ui().friendsViewControllerWithUsers(toExclude: Array(thread.users()), onComplete: { users, name in
+                    let flvc = BChatSDK.ui().friendsViewControllerWithUsers(toExclude: Array(thread.users()), onComplete: { users, name, image in
                         BChatSDK.thread().addUsers(users, to: thread)
                     })
                     flvc?.setRightBarButtonActionTitle(Bundle.t(bAdd))
@@ -381,7 +399,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
     }
     
     open func addKeyboardOverlays() {
-        let optionsOverlay = OptionsKeyboardOverlay()
+        let optionsOverlay = ChatKit.provider().optionsKeyboardOverlay()
 
         var options = getOptions()
         if let vc = weakVC, let thread = thread {
@@ -393,7 +411,8 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
         model?.addKeyboardOverlay(name: OptionsKeyboardOverlay.key, overlay: optionsOverlay)
 
         if BChatSDK.audioMessage() != nil {
-            let recordOverlay = RecordKeyboardOverlay.new(self)
+            let recordOverlay = ChatKit.provider().recordKeyboardOverlay(self)
+//            let recordOverlay = RecordKeyboardOverlay.new(self)
             model?.addKeyboardOverlay(name: RecordKeyboardOverlay.key, overlay: recordOverlay)
         }
     }
@@ -517,7 +536,7 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
     public static func convert(_ messages: [PMessage]) -> [AbstractMessage] {
         var output = [AbstractMessage]()
         for message in messages {
-            output.append(CKMessage(message: message))
+            output.append(CKMessageStore.shared().new(for: message))
         }
         return output
     }
@@ -598,130 +617,198 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
     
     open func getOptions() -> [Option] {
         var options = [
-            Option(galleryOnClick: { [weak self] in
-                if let vc = self?.weakVC, let thread = self?.thread {
-                    let action = BSelectMediaAction(type: bPictureTypeAlbumImage, viewController: vc, cropEnabled: false)
-                    _ = action?.execute()?.thenOnMain({ success in
-                        if let imageMessage = BChatSDK.imageMessage(), let photo = action?.photo {
-                            if ChatKit.config().imageEditorEnabled {
-                                ZLEditImageViewController.showEditImageVC(parentVC: vc, animate: false, image: photo, editModel: nil) { (resImage, editModel) in
-                                    imageMessage.sendMessage(with: resImage, withThreadEntityID: thread.entityID())
-                                }
-                            } else {
-                                imageMessage.sendMessage(with: photo, withThreadEntityID: thread.entityID())
-                            }
-                        }
-                        return success
-                    }, nil)
-                }
-            }),
-            Option(locationOnClick: { [weak self] in
-                if let thread = self?.thread {
-                    self?.locationAction = BSelectLocationAction()
-                    _ = self?.locationAction?.execute()?.thenOnMain({ location in
-                        if let locationMessage = BChatSDK.locationMessage(), let location = location as? CLLocation {
-                            locationMessage.sendMessage(with: location, withThreadEntityID: thread.entityID())
-                        }
-                        return location
-                    }, nil)
-                }
-            })
+            galleryOption(),
+            locationOption()
         ]
         
         if BChatSDK.videoMessage() != nil {
-            options.append( Option(videoOnClick: { [weak self] in
-                if let vc = self?.weakVC, let thread = self?.thread {
-                    let action = BSelectMediaAction(type: bPictureTypeAlbumVideo, viewController: vc)
-                    _ = action?.execute()?.thenOnMain({ success in
-                        if let videoMessage = BChatSDK.videoMessage(), let data = action?.videoData, let coverImage = action?.coverImage {
-                            // Set the local url of the message
-                            videoMessage.sendMessage(withVideo: data, cover: coverImage, withThreadEntityID: thread.entityID())
-                        }
-                        return success
-                    }, nil)
-                }
-            }))
+            options.append(videoOption())
         }
-        
+
         return options
     }
     
-    open func addSendBarActions() {
-            model?.addSendBarAction(SendBarActions.send { [weak self] in
-                if let thread = self?.thread {
-                    if let text = self?.weakVC?.sendBarView.trimmedText(), !text.isEmpty {
-                        if let message = self?.weakVC?.replyToMessage(), let m = BChatSDK.db().fetchEntity(withID: message.messageId(), withType: bMessageEntity) as? PMessage {
-                            BChatSDK.thread().reply(to: m, withThreadID: thread.entityID(), reply: text)
-                            self?.weakVC?.hideReplyView()
-                        } else {
-                            BChatSDK.thread().sendMessage(withText: text, withThreadEntityID: thread.entityID())
+    open func galleryOption() -> Option {
+        return Option(galleryOnClick: { [weak self] in
+            if let vc = self?.weakVC, let thread = self?.thread {
+                
+                let pvc = PreviewViewController(mode: .image)
+                
+                pvc.setDidFinishPicking(images: { [weak self] images in
+//                    if let image = image, let imageMessage = BChatSDK.imageMessage() {
+//                        imageMessage.sendMessage(with: image, withThreadEntityID: thread.entityID())
+//                    }
+                    for image in images {
+                        if let imageMessage = BChatSDK.imageMessage(), let model = self?.model {
+                            imageMessage.sendMessage(with: image, withThreadEntityID: model.conversation.conversationId())
                         }
-                        self?.weakVC?.sendBarView.clear()
                     }
-                }
-            })
-
-            if BChatSDK.audioMessage() != nil {
-                model?.addSendBarAction(SendBarActions.mic { [weak self] in
-                    self?.weakVC?.showKeyboardOverlay(name: RecordKeyboardOverlay.key)
                 })
+                
+                vc.present(pvc, animated: true, completion: nil)
+
+                
+//                let action = BSelectMediaAction(type: bPictureTypeAlbumImage, viewController: vc, cropEnabled: false)
+//                _ = action?.execute()?.thenOnMain({ success in
+//                    if let imageMessage = BChatSDK.imageMessage(), let photo = action?.photo {
+//
+//                        vc.present(PreviewViewController(image: photo), animated: true, completion: nil)
+//
+//                        if ChatKit.config().imageEditorEnabled {
+//                            ZLEditImageViewController.showEditImageVC(parentVC: vc, animate: false, image: photo, editModel: nil) { (resImage, editModel) in
+//                                imageMessage.sendMessage(with: resImage, withThreadEntityID: thread.entityID())
+//                            }
+//                        } else {
+//                            imageMessage.sendMessage(with: photo, withThreadEntityID: thread.entityID())
+//                        }
+//                    }
+//                    return success
+//                }, nil)
             }
+        })
+    }
+    open func locationOption() -> Option {
+        return Option(locationOnClick: { [weak self] in
+            if let thread = self?.thread {
+                self?.locationAction = BSelectLocationAction()
+                _ = self?.locationAction?.execute()?.thenOnMain({ location in
+                    if let locationMessage = BChatSDK.locationMessage(), let location = location as? CLLocation {
+                        locationMessage.sendMessage(with: location, withThreadEntityID: thread.entityID())
+                    }
+                    return location
+                }, nil)
+            }
+        })
+    }
+    
+    open func videoOption() -> Option {
+        return Option(videoOnClick: { [weak self] in
+            if let vc = self?.weakVC, let thread = self?.thread {
+                let action = BSelectMediaAction(type: bPictureTypeAlbumVideo, viewController: vc)
+                _ = action?.execute()?.thenOnMain({ success in
+                    if let videoMessage = BChatSDK.videoMessage(), let data = action?.videoData, let coverImage = action?.coverImage {
+                        // Set the local url of the message
+                        videoMessage.sendMessage(withVideo: data, cover: coverImage, withThreadEntityID: thread.entityID())
+                    }
+                    return success
+                }, nil)
+            }
+        })
+    }
 
-            model?.addSendBarAction(SendBarActions.plus { [weak self] in
-                self?.weakVC?.showKeyboardOverlay(name: OptionsKeyboardOverlay.key)
-            })
-            
-            model?.addSendBarAction(SendBarActions.camera { [weak self] in
-                if let vc = self?.weakVC, let thread = self?.thread {
-                    let type = BChatSDK.videoMessage() == nil ? bPictureTypeCameraImage : bPictureTypeCameraVideo
+    open func addSendBarActions() {
+            model?.addSendBarAction(sendAction())
+            if BChatSDK.audioMessage() != nil {
+                model?.addSendBarAction(micAction())
+            }
+            model?.addSendBarAction(plusAction())
+            model?.addSendBarAction(cameraAction())
+        }
+    
+    open func sendAction() -> SendBarAction {
+        return SendBarActions.send { [weak self] in
+            if let thread = self?.thread {
+                if let text = self?.weakVC?.sendBarView.trimmedText(), !text.isEmpty {
+                    if let message = self?.weakVC?.replyToMessage(), let m = BChatSDK.db().fetchEntity(withID: message.messageId(), withType: bMessageEntity) as? PMessage {
+                        BChatSDK.thread().reply(to: m, withThreadID: thread.entityID(), reply: text)
+                        self?.weakVC?.hideReplyView()
+                    } else {
+                        BChatSDK.thread().sendMessage(withText: text, withThreadEntityID: thread.entityID())
+                    }
+                    self?.weakVC?.sendBarView.clear()
+                }
+            }
+        }
+    }
 
-                    let action = BSelectMediaAction(type: type, viewController: vc)
-                    
-                    AVCaptureDevice.requestAccess(for: .video, completionHandler: { success in
-                        DispatchQueue.main.async {
-                            if success {
-                                _ = action?.execute()?.thenOnMain({ success in
-                                    if let imageMessage = BChatSDK.imageMessage(), let photo = action?.photo {
-                                        if ChatKit.config().imageEditorEnabled {
-                                            ZLEditImageViewController.showEditImageVC(parentVC: vc, animate: false, image: photo, editModel: nil) { (resImage, editModel) in
-                                                imageMessage.sendMessage(with: resImage, withThreadEntityID: thread.entityID())
-                                            }
-                                        } else {
-                                            imageMessage.sendMessage(with: photo, withThreadEntityID: thread.entityID())
-                                        }
-                                    }
-                                    if let videoMessage = BChatSDK.videoMessage(), let video = action?.videoData, let coverImage = action?.coverImage {
-                                        videoMessage.sendMessage(withVideo: video, cover: coverImage, withThreadEntityID: thread.entityID())
-                                    }
-                                    return success
-                                }, nil)
-                            } else {
-                                self?.weakVC?.view.makeToast(Strings.t(Strings.grantCameraPermission))
+    open func micAction() -> SendBarAction {
+        return SendBarActions.mic { [weak self] in
+            self?.weakVC?.showKeyboardOverlay(name: RecordKeyboardOverlay.key)
+        }
+    }
+
+    open func plusAction() -> SendBarAction {
+        return SendBarActions.plus { [weak self] in
+            self?.weakVC?.showKeyboardOverlay(name: OptionsKeyboardOverlay.key)
+        }
+    }
+
+    open func cameraAction() -> SendBarAction {
+        return SendBarActions.camera { [weak self] in
+            if let vc = self?.weakVC, let thread = self?.thread {
+                
+                DispatchQueue.main.async {
+
+                    let pvc = PreviewViewController(mode: .image, nibName: nil, bundle: nil)
+                    pvc.setDidFinishPicking(images: { [weak self] images in
+                        for image in images {
+                            if let imageMessage = BChatSDK.imageMessage() {
+                                imageMessage.sendMessage(with: image, withThreadEntityID: thread.entityID())
                             }
                         }
                     })
+
+                    vc.present(pvc, animated: true, completion: nil)
                 }
-            })
+                
+                
+//                let type = BChatSDK.videoMessage() == nil ? bPictureTypeCameraImage : bPictureTypeCameraVideo
+//
+//                let action = BSelectMediaAction(type: type, viewController: vc)
+//
+//                AVCaptureDevice.requestAccess(for: .video, completionHandler: { success in
+//                    DispatchQueue.main.async {
+//                        if success {
+//                            _ = action?.execute()?.thenOnMain({ success in
+//                                if let imageMessage = BChatSDK.imageMessage(), let photo = action?.photo {
+//                                    if ChatKit.config().imageEditorEnabled {
+//                                        ZLEditImageViewController.showEditImageVC(parentVC: vc, animate: false, image: photo, editModel: nil) { (resImage, editModel) in
+//                                            imageMessage.sendMessage(with: resImage, withThreadEntityID: thread.entityID())
+//                                        }
+//                                    } else {
+//                                        imageMessage.sendMessage(with: photo, withThreadEntityID: thread.entityID())
+//                                    }
+//                                }
+//                                if let videoMessage = BChatSDK.videoMessage(), let video = action?.videoData, let coverImage = action?.coverImage {
+//                                    videoMessage.sendMessage(withVideo: video, cover: coverImage, withThreadEntityID: thread.entityID())
+//                                }
+//                                return success
+//                            }, nil)
+//                        } else {
+//                            self?.weakVC?.view.makeToast(Strings.t(Strings.grantCameraPermission))
+//                        }
+//                    }
+//                })
+            }
         }
+    }
     
     open func addToolbarActions() {
-
-        model?.addToolbarAction(ToolbarAction.copyAction(onClick: { [weak self] messages in
+        model?.addToolbarAction(copyToolbarAction())
+        model?.addToolbarAction(trashToolbarAction())
+        model?.addToolbarAction(forwardToolbarAction())
+        model?.addToolbarAction(replyToolbarAction())
+    }
+    
+    open func copyToolbarAction() -> ToolbarAction {
+        return ToolbarAction.copyAction(onClick: { [weak self] messages in
             let formatter = DateFormatter()
             formatter.dateFormat = ChatKit.config().messageHistoryTimeFormat
             
             var text = ""
             for message in messages {
-                text += String(format: "%@ - %@ %@\n", formatter.string(from: message.messageDate()), message.messageSender().userName(), message.messageText() ?? "")
+                text += String(format: "%@ - %@ %@\n", formatter.string(from: message.messageDate()), message.messageSender().userName() ?? "", message.messageText() ?? "")
             }
             
             UIPasteboard.general.string = text
             self?.weakVC?.view.makeToast(Strings.t(Strings.copiedToClipboard))
 
             return true
-        }))
-
-        model?.addToolbarAction(ToolbarAction.trashAction(visibleFor: { messages in
+        })
+    }
+    
+    open func trashToolbarAction() -> ToolbarAction {
+        return ToolbarAction.trashAction(visibleFor: { messages in
             var visible = true
             for message in messages {
                 if let m = CKMessageStore.shared().message(with: message.messageId()) {
@@ -738,9 +825,11 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
                 }, nil)
             }
             return true
-        }))
-
-        model?.addToolbarAction(ToolbarAction.forwardAction(visibleFor: { messages in
+        })
+    }
+    
+    open func forwardToolbarAction() -> ToolbarAction {
+        return ToolbarAction.forwardAction(visibleFor: { messages in
             return messages.count == 1
         }, onClick: { [weak self] messages in
             if let message = messages.first as? CKMessage {
@@ -749,36 +838,47 @@ open class ChatKitIntegration: NSObject, ChatViewControllerDelegate, ChatModelDe
                 self?.weakVC?.present(UINavigationController(rootViewController: forwardViewController), animated: true, completion: nil)
             }
             return true
-        }))
-
-        model?.addToolbarAction(ToolbarAction.replyAction(visibleFor: { messages in
+        })
+    }
+    
+    open func replyToolbarAction() -> ToolbarAction {
+        return ToolbarAction.replyAction(visibleFor: { messages in
             return messages.count == 1
         }, onClick: { [weak self] messages in
             if let message = messages.first {
                 self?.weakVC?.showReplyView(message)
             }
             return true
-        }))
-        
+        })
     }
     
     // Record view delegate
-    public func send(audio: Data, duration: Int) {
+    open func send(audio: Data, duration: Int) {
         // Save this file to the standard directory
         if let thread = thread {
             BChatSDK.audioMessage()?.sendMessage(withAudio: audio, duration: Double(duration), withThreadEntityID: thread.entityID())
         }
     }
 
+    open func onAvatarClick(_ message: AbstractMessage) -> Bool {
+        BChatSDK.db().perform(onMain: { [weak self] in
+            if let user = BChatSDK.db().fetchEntity(withID: message.messageSender().userId(), withType: bUserEntity) as? PUser {
+                if let vc = BChatSDK.ui().profileViewController(with: user) {
+                    self?.weakVC?.navigationController?.pushViewController(vc, animated: true)
+                }
+            }
+        })
+        return true
+    }
 
 }
 
-public class FileMessageOnClick: NSObject, MessageOnClickListener, UIDocumentInteractionControllerDelegate {
+open class FileMessageOnClick: NSObject, MessageOnClickListener, UIDocumentInteractionControllerDelegate {
     
-    var documentInteractionProvider : UIDocumentInteractionController?
-    weak var vc: UIViewController?
+    open var documentInteractionProvider : UIDocumentInteractionController?
+    open weak var vc: UIViewController?
     
-    public func onClick(for vc: ChatViewController?, message: AbstractMessage) {
+    open func onClick(for vc: ChatViewController?, message: AbstractMessage) {
         if let vc = vc, let message = message as? CKFileMessage, let url = message.localFileURL {
             
             var fileURL = url;
@@ -794,31 +894,31 @@ public class FileMessageOnClick: NSObject, MessageOnClickListener, UIDocumentInt
         }
     }
     
-    public func documentInteractionControllerViewControllerForPreview(_ controller: UIDocumentInteractionController) -> UIViewController {
+    open func documentInteractionControllerViewControllerForPreview(_ controller: UIDocumentInteractionController) -> UIViewController {
         return self.vc!
     }
     
-    public func documentInteractionControllerViewForPreview(_ controller: UIDocumentInteractionController) -> UIView? {
+    open func documentInteractionControllerViewForPreview(_ controller: UIDocumentInteractionController) -> UIView? {
         return self.vc!.view
     }
     
-    public func documentInteractionControllerRectForPreview(_ controller: UIDocumentInteractionController) -> CGRect {
+    open func documentInteractionControllerRectForPreview(_ controller: UIDocumentInteractionController) -> CGRect {
         return self.vc!.view.frame
     }
 }
 
-public class FileMessageProvider: MessageProvider {
-    public func new(for message: PMessage) -> CKMessage {
+open class FileMessageProvider: MessageProvider {
+    open func new(for message: PMessage) -> CKMessage {
         return CKFileMessage(message: message)
     }
 }
 
-public class FileOptionProvider: OptionProvider {
+open class FileOptionProvider: OptionProvider {
     
     var action: BSelectFileAction?
     weak var vc: ChatViewController?
     
-    public func provide(for vc: ChatViewController, thread: PThread) -> Option {
+    open func provide(for vc: ChatViewController, thread: PThread) -> Option {
         self.vc = vc
         
         return Option(fileOnClick: { [weak self] in
@@ -845,9 +945,9 @@ public class FileOptionProvider: OptionProvider {
     }
 }
 
-public class Base64MessageOnClick: NSObject, MessageOnClickListener {
+open class Base64MessageOnClick: NSObject, MessageOnClickListener {
         
-    public func onClick(for vc: ChatViewController?, message: AbstractMessage) {
+    open func onClick(for vc: ChatViewController?, message: AbstractMessage) {
         if let vc = vc,
            let message = message as? CKMessage,
            let base64 = message.messageMeta()?["image-data"] as? String,

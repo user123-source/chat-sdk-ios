@@ -24,9 +24,15 @@
 
 -(RXPromise *) createThreadWithUsers: (NSArray *) users
                                 name: (NSString *) name
+                            imageURL: (NSString *) imageURL
                                 type: (bThreadType) type
                             entityID: (NSString *) entityID
                          forceCreate: (BOOL) force
+                       threadCreated: (void(^)(NSError * error, id<PThread> thread)) threadCreated;
+
+-(RXPromise *) createThreadWithUsers: (NSArray *) users
+                                name: (NSString *) name
+                            imageURL: (NSString *) imageURL
                        threadCreated: (void(^)(NSError * error, id<PThread> thread)) threadCreated;
 
 -(RXPromise *) createThreadWithUsers: (NSArray *) users
@@ -75,7 +81,7 @@
 
 -(BOOL) canLeaveThread: (id<PThread>) thread;
 -(BOOL) canJoinThread: (id<PThread>) thread;
-
+-(BOOL) canEditThread: (NSString *) threadEntityID;
 
 /**
  * @brief Send different types of message to a particular thread
@@ -109,7 +115,7 @@
 -(void) sendLocalSystemMessageWithText:(NSString *)text type: (bSystemMessageType) type withThreadEntityID:(NSString *)threadID;
 
 - (NSArray *)threadsWithUsers:(NSArray *)users type:(bThreadType)type;
-
+-(RXPromise *) pushThreadMeta: (NSString *) threadEntityID;
 
 -(RXPromise *) replyToMessage: (id<PMessage>) message withThreadID: (NSString *) threadEntityID reply: (NSString *) reply;
 -(RXPromise *) forwardMessage: (id<PMessage>) message toThreadWithID: (NSString *) threadEntityID;
@@ -142,12 +148,15 @@
 -(BOOL) canDestroyThread: (nonnull NSString *) threadEntityID;
 -(nonnull RXPromise *) refreshRoles: (nonnull NSString *) threadEntityID;
 
+
+
 @optional
 
 
 -(nonnull RXPromise *) muteThread: (nonnull id<PThread>) thread;
 -(nonnull RXPromise *) unmuteThread: (nonnull id<PThread>) thread;
 -(nonnull RXPromise *) destroyThread: (nonnull id<PThread>) thread;
+-(BOOL) threadImagesSupported;
 
 @end
 

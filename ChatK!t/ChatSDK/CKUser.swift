@@ -1,6 +1,6 @@
 //
 //  CKUser.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 19/07/2020.
 //
@@ -20,7 +20,7 @@ open class CKUser: User {
         return user.entityID()
     }
     
-    open func userName() -> String {
+    open func userName() -> String? {
         return user.name()
     }
     

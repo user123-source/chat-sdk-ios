@@ -1,6 +1,6 @@
 //
 //  Message.swift
-//  AFNetworking
+
 //
 //  Created by ben3 on 18/07/2020.
 //
@@ -92,6 +92,12 @@ public protocol AudioMessage: DownloadableMessage, UploadableMessage { //}, HasP
 }
 
 public protocol ImageMessage: UploadableMessage, HasImage, HasPlaceholder {
+}
+
+public protocol StickerMessage: HasImage, HasPlaceholder {
+}
+
+public protocol GifMessage: HasImage {
 }
 
 public protocol VideoMessage: DownloadableMessage, ImageMessage {

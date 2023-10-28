@@ -1,6 +1,6 @@
 //
 //  BConfiguration.h
-//  AFNetworking
+
 //
 //  Created by Ben on 11/7/17.
 //
@@ -65,6 +65,9 @@ typedef enum {
 
 // User profile image
 @property (nonatomic, readwrite) UIImage * xmppDefaultAvatar;
+
+// Should the app always show a back button on modal views or rely on the swipe to dismiss
+@property (nonatomic, readwrite) BOOL alwaysShowBackButtonOnModalViews;
 
 @property (nonatomic, readwrite) NSString * timeFormat;
 
@@ -134,6 +137,8 @@ typedef enum {
 // The the image to be displayed on the login screen. Image should be
 // 120x120px
 @property (nonatomic, readwrite) UIImage * logoImage;
+
+@property (nonatomic, readwrite) NSString * timeAgoDateFormat;
 
 // The app name text displayed on the login screen
 @property (nonatomic, readwrite) NSString * loginScreenAppName;
@@ -253,6 +258,11 @@ typedef enum {
 // If this is true, extra data will be added to support Chat SDK web
 @property (nonatomic, readwrite) BOOL enableWebCompatibility;
 
+@property (nonatomic, readwrite) UIColor * threadUnreadViewBackgroundColor;
+@property (nonatomic, readwrite) UIColor * threadUnreadViewTextColor;
+
+@property (nonatomic, readwrite) UIColor * threadCellTypingTextColor;
+@property (nonatomic, readwrite) UIColor * threadCellLastMessageTextColor;
 
 
 // Firebase options
@@ -312,6 +322,13 @@ typedef enum {
 
 @property (nonatomic, readwrite) BOOL xmppAutoAcceptIncomingPresenceRequests;
 
+
+@property (nonatomic, readwrite) BOOL sendBase64ImagePreview;
+@property (nonatomic, readwrite) CGFloat imagePreviewMaxSize;
+@property (nonatomic, readwrite) CGFloat imagePreviewQuality;
+
+@property (nonatomic, readwrite) BOOL groupImagesEnabled;
+@property (nonatomic, readwrite) BOOL allowEmptyBody;
 
 +(BConfiguration *) configuration;
 
